@@ -1,7 +1,11 @@
 namespace ToDoList.Models;
 
-public class Category
+public enum Category
 {
-    public string CategoryId { get; set; } = string.Empty;
-    public string Name { get; set; } = string.Empty;
+    All = 'A',
+    Work = 'W',
+    Home = 'H',
+    Exercise = 'X',
+    Shopping = 'S',
+    Contact = 'C'
 }

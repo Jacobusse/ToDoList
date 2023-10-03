@@ -1,7 +1,8 @@
 namespace ToDoList.Models;
 
-public class Status
+public enum Status
 {
-    public string StatusId { get; set; } = string.Empty;
-    public string Name { get; set; } = string.Empty;
+    All = 'A',
+    Open = 'O',
+    Done = 'D',
 }

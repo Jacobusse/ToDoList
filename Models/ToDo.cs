@@ -13,14 +13,14 @@ public class ToDo
     public DateTime? DueDate { get; set; }
 
     [Required(ErrorMessage = "Please enter a Categroy")]
-    public string CategoryId { get; set; } = string.Empty;
+    public char CategoryId { get; set; } = (char)Category.Contact;
     [ValidateNever]
-    public Category Category { get; set; } = null!;
+    public Category Category => (Category)CategoryId;
 
     [Required(ErrorMessage = "Please enter a Status")]
-    public string StatusId { get; set; } = string.Empty;
+    public char StatusId { get; set; } = (char)Status.Open;
     [ValidateNever]
-    public Status Status { get; set; } = null!;
+    public Status Status => (Status)StatusId;
 
-    public bool Overdue => StatusId == "open" && DueDate < DateTime.Today;
+    public bool Overdue => Status == Status.Open && DueDate < DateTime.Today;
 }

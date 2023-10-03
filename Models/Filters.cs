@@ -1,30 +1,31 @@
+using ToDoList.Models;
+
 public class Filters
 {
     public string FilterString { get; }
-    public string CategoryId { get; }
-    public string Due { get; }
-    public string StatusId { get; }
+    public Category Category { get; }
+    public DueType Due { get; }
+    public Status Status { get; }
 
-    public bool HasCategory => CategoryId.ToLower() != "all"; public bool HasDue => Due.ToLower() != "all";
-    public bool HasStatus => StatusId.ToLower() != "all";
-    public bool IsPast => Due.ToLower() == "past";
-    public bool IsFuture => Due.ToLower() == "future";
-    public bool IsToday => Due.ToLower() == "today";
+    public bool HasCategory => Category != Category.All;
+    public bool HasDue => Due != DueType.All;
+    public bool HasStatus => Status != Status.All;
+    public bool IsPast => Due == DueType.Past;
+    public bool IsFuture => Due == DueType.Future;
+    public bool IsToday => Due == DueType.Today;
 
-    public Filters(string filterstring)
+    public Filters(string filter)
     {
-        FilterString = filterstring ?? "all-all-all";
-        string[] filters = FilterString.Split('-');
-        CategoryId = filters[0];
-        Due = filters[1];
-        StatusId = filters[2];
+        try
+        {
+            FilterString = filter;
+            string[] filters = filter.Split('-');
+
+            Category = Enum.Parse<Category>(filters[0]);
+            Due = Enum.Parse<DueType>(filters[1]);
+            Status = Enum.Parse<Status>(filters[2]);
+        }
+        catch { }
+
     }
-
-
-    public static Dictionary<string, string> DueFilterValues => new Dictionary<string, string>
-    {
-        { "future", "Future" },
-        { "past", "Past" },
-        { "today", "Today" }
-    };
 }

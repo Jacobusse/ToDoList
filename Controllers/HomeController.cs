@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ToDoList.Models;
+using ToDoList.ViewModels;
 
 namespace ToDoList.Controllers;
 
@@ -19,22 +20,17 @@ public class HomeController : Controller
     public IActionResult Index(string filter)
     {
         var filters = new Filters(filter);
-        ViewBag.Filters = filters;
-        ViewBag.Categories = _db.Categories.ToList();
-        ViewBag.Statuses = _db.Statuses.ToList();
-        ViewBag.DueFilters = Filters.DueFilterValues;
+        ToDoVM todo = new ToDoVM() { Filters = filters };
 
-        IQueryable<ToDo> query = _db.ToDos
-          .Include(t => t.Category)
-          .Include(t => t.Status);
+        IQueryable<ToDo> query = _db.ToDos;
 
         if (filters.HasCategory)
         {
-            query = query.Where(t => t.CategoryId == filters.CategoryId);
+            query = query.Where(t => t.CategoryId == (char)filters.Category);
         }
         if (filters.HasStatus)
         {
-            query = query.Where(t => t.StatusId == filters.StatusId);
+            query = query.Where(t => t.StatusId == (char)filters.Status);
         }
         if (filters.HasDue)
         {
@@ -46,16 +42,16 @@ public class HomeController : Controller
             else if (filters.IsToday)
                 query = query.Where(t => t.DueDate == today);
         }
-        var tasks = query.OrderBy(t => t.DueDate).ToList();
-        return View(tasks);
+
+        todo.ToDos = query.OrderBy(t => t.DueDate).ToList();
+        return View(todo);
     }
 
-
     [HttpPost]
-    public IActionResult Filter(string[] filter)
+    public IActionResult Filter(string[] filters) 
     {
-        string filterstring = string.Join('-', filter);
-        return RedirectToAction("Index", new { filter = filterstring });
+        string filter = string.Join("-", filters);
+        return RedirectToAction("Index", new { filter });
     }
 
     [HttpPost]
@@ -64,18 +60,18 @@ public class HomeController : Controller
         selected = _db.ToDos.Find(selected.Id)!;
         if (selected != null)
         {
-            selected.StatusId = "closed";
+            selected.StatusId = (char)Status.Done;
             _db.SaveChanges();
         }
-        return RedirectToAction("Index", new { filter });
+        return RedirectToAction("Filter", new { filter });
     }
 
     [HttpGet]
     public IActionResult Add()
     {
-        ViewBag.Categories = _db.Categories.ToList();
-        ViewBag.Statuses = _db.Statuses.ToList();
-        var task = new ToDo { StatusId = "open" };
+        ViewBag.Categories = Enum.GetValues<Category>();
+        ViewBag.Statuses = Enum.GetValues<Status>();
+        var task = new ToDo { StatusId = (char)Status.Open };
         return View(task);
     }
 
@@ -84,8 +80,8 @@ public class HomeController : Controller
     {
         if (!ModelState.IsValid)
         {
-            ViewBag.Categories = _db.Categories.ToList();
-            ViewBag.Statuses = _db.Statuses.ToList();
+            ViewBag.Categories = Enum.GetValues<Category>();
+            ViewBag.Statuses = Enum.GetValues<Status>();
             return View(task);
         }
 
@@ -97,7 +93,7 @@ public class HomeController : Controller
     [HttpPost]
     public IActionResult DeleteComplete(string filter)
     {
-        var toDelete = _db.ToDos.Where(t => t.StatusId == "closed").ToList();
+        var toDelete = _db.ToDos.Where(t => t.Status == Status.Done).ToList();
         foreach (var task in toDelete)
         {
             _db.ToDos.Remove(task);
